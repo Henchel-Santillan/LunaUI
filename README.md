@@ -1,6 +1,6 @@
 # LunaUI
 
-LunaUI is a Qt6 Widgets-based desktop application that accompanies LunaSys, both of which are part of the Luna project. As a desktop user interface, the purpose of LunaUI is to provide , and to function as the application-level component fitted into a functional embedded system.
+LunaUI is a Qt6 Widgets-based desktop application that accompanies LunaSys, both of which are part of the Luna project. As a desktop user interface, the purpose of LunaUI is to provide live feed from a CMOS camera, basic video playback and image viewing features, and device diagnostics, while functioning as the application-level component connected to an embedded system. There are plans to support features related to computer vision and image processing in the future.
 
 ## Build Instructions
 
