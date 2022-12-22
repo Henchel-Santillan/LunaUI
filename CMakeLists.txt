@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Attempt to look up Qt6 by first finding the Qt installaton
 # When running cmake, pass the path to the installation via -DCMAKE_PREFIX_PATH option
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Multimedia MultimediaWidgets SerialPort)
 
 # Configure project-wide defaults, including CMAKE_AUTOMOC ON
 qt_standard_project_setup()
