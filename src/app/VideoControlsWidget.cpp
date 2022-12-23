@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QSlider>
+#include <QString>
 #include <QVariant>
 
 

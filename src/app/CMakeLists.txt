@@ -1,5 +1,8 @@
 # Building an executable, with the project as the target
 add_executable(${PROJECT_NAME}
+    # Base Classes
+    BaseDialog.cpp
+
     # Video Player
     VideoControlsWidget.cpp
     VideoDialog.cpp

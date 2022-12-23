@@ -9,6 +9,7 @@
 #include <QString>
 #include <QStyle>
 #include <QToolButton>
+#include <QUrl>
 #include <QVariant>
 #include <QVBoxLayout>
 
@@ -30,7 +31,6 @@ VideoRecentListWidget::VideoRecentListWidget(QWidget *pParent)
     , m_pUpButton(new QToolButton)
     , m_pClearButton(new QToolButton)
     , m_pRemoveButton(new QToolButton)
-    , m_pSelectButton(new QToolButton)
 {
     updateTitleLabel();
 
@@ -46,12 +46,13 @@ VideoRecentListWidget::VideoRecentListWidget(QWidget *pParent)
     QObject::connect(m_pUpButton, &QAbstractButton::clicked, this, &VideoRecentListWidget::onUpButtonClicked);
     QObject::connect(m_pClearButton, &QAbstractButton::clicked, this, &VideoRecentListWidget::onClearButtonClicked);
     QObject::connect(m_pRemoveButton, &QAbstractButton::clicked, this, &VideoRecentListWidget::onRemoveButtonClicked);
-    QObject::connect(m_pSelectButton, &QAbstractButton::clicked, this, &VideoRecentListWidget::onSelectButtonClicked);
+
+    // Connect the QListWidget to item activation slot
+    QObject::connect(m_pListWidget, &QListWidget::itemActivated, this, &VideoRecentListWidget::onItemActivated);
 
     // Add the buttons to the horizontal box layout
     m_pControlsLayout->addWidget(m_pUpButton);
     m_pControlsLayout->addWidget(m_pDownButton);
-    m_pControlsLayout->addWidget(m_pSelectButton);
     m_pControlsLayout->addWidget(m_pRemoveButton);
     m_pControlsLayout->addWidget(m_pClearButton);
 
@@ -67,9 +68,9 @@ VideoRecentListWidget::VideoRecentListWidget(QWidget *pParent)
 
 // ========== PUBLIC SLOTS
 
-void VideoRecentListWidget::push(const QString &display, const QString &path) {
-    auto item = new QListWidgetItem(display);
-    item->setData(Qt::DisplayRole, QVariant(path));
+void VideoRecentListWidget::push(const QString &path, const QUrl &url) {
+    auto item = new QListWidgetItem(path);
+    item->setData(Qt::DisplayRole, QVariant::fromValue(url));
 
     // Insert the new QListWidgetItem at the beginning of the QListWidget and set the current row to the top
     m_pListWidget->insertItem(0, item);
@@ -131,13 +132,10 @@ void VideoRecentListWidget::onRemoveButtonClicked() {
     }    
 }
 
-void VideoRecentListWidget::onSelectButtonClicked() {
-    auto item = m_pListWidget->currentItem();   // TODO: Does currentItem's row match currentRow internally?
-    auto data = item->data(Qt::DisplayRole);
-    emit itemActivated(data.toString());
-
-    // TODO: Move this item to the top of the list and set the current index to 0
-
+void VideoRecentListWidget::onItemActivated(QListWidgetItem *pItem) {
+    QVariant item = pItem->data(Qt::DisplayRole);
+    QUrl url = item.value<QUrl>();
+    emit itemActivated(url);
 }
 
 

@@ -6,7 +6,9 @@
 class QHBoxLayout;
 class QLabel;
 class QListWidget;
+class QListWidgetItem;
 class QToolButton;
+class QUrl;
 class QVBoxLayout;
 
 static constexpr int LIST_MAX = 20;
@@ -18,17 +20,17 @@ public:
     explicit VideoRecentListWidget(QWidget *pParent = nullptr);
 
 public slots:
-    void push(const QString &display, const QString &path);
+    void push(const QString &path, const QUrl &url);
 
 signals:
-    void itemActivated(const QString &path);   // Emitted when an item is clicked or double-clicked by the user
+    void itemActivated(const QUrl &url);   // Emitted when an item is clicked or double-clicked by the user
 
 private slots:
     void onDownButtonClicked();
     void onUpButtonClicked();
     void onClearButtonClicked();
     void onRemoveButtonClicked();
-    void onSelectButtonClicked();
+    void onItemActivated(QListWidgetItem *pItem);
 
 private:
     // Functions
