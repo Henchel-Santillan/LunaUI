@@ -5,8 +5,9 @@
 
 class QKeyEvent;
 class QLayout;
-class QShowEvent;
+class QPaintEvent;
 class QPushButton;
+class QShowEvent;
 class QVBoxLayout;
 class QWidget;
 
@@ -25,10 +26,12 @@ protected slots:
 protected:
     // Functions
     void keyPressEvent(QKeyEvent *pEvent) override;
+    void paintEvent(QPaintEvent *pEvent) override;
     void showEvent(QShowEvent *pEvent) override;
 
     // Data members
     BaseDialog *m_pParent;
+    QWidget *m_pMainWidget;
     QVBoxLayout *m_pMainLayout;
     QPushButton *m_pBackButton;
 };

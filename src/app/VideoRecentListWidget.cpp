@@ -6,6 +6,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMessageBox>
+#include <QSizePolicy>
 #include <QString>
 #include <QStyle>
 #include <QToolButton>
@@ -21,10 +22,9 @@ static constexpr const char *TITLE = "Recent ";
 
 // ========== CONSTRUCTOR DEFINITION
 
-VideoRecentListWidget::VideoRecentListWidget(QWidget *pParent) 
+VideoRecentListWidget::VideoRecentListWidget(QWidget *pParent)
     : QWidget(pParent)
     , m_pMainLayout(new QVBoxLayout)
-    , m_pControlsLayout(new QHBoxLayout)
     , m_pListWidget(new QListWidget)
     , m_pTitleLabel(new QLabel)
     , m_pDownButton(new QToolButton)
@@ -32,14 +32,18 @@ VideoRecentListWidget::VideoRecentListWidget(QWidget *pParent)
     , m_pClearButton(new QToolButton)
     , m_pRemoveButton(new QToolButton)
 {
-    updateTitleLabel();
+    this->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    this->updateTitleLabel();
+
+    // Disable all the control buttons when shown first
+    this->setControlButtonsEnabled(false);
 
     // Set the tool button styles
     m_pDownButton->setIcon(this->style()->standardIcon(QStyle::SP_ArrowDown));
     m_pUpButton->setIcon(this->style()->standardIcon(QStyle::SP_ArrowUp));
-    m_pClearButton->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton));
-    m_pRemoveButton->setIcon(this->style()->standardIcon(QStyle::SP_TrashIcon));
-    m_pSelectButton->setIcon(this->style()->standardIcon(QStyle::SP_DialogOpenButton));
+    m_pClearButton->setIcon(this->style()->standardIcon(QStyle::SP_TrashIcon));
+    m_pRemoveButton->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton));
 
     // Connect the tool buttons to the appropriate private handlers
     QObject::connect(m_pDownButton, &QAbstractButton::clicked, this, &VideoRecentListWidget::onDownButtonClicked);
@@ -51,18 +55,26 @@ VideoRecentListWidget::VideoRecentListWidget(QWidget *pParent)
     QObject::connect(m_pListWidget, &QListWidget::itemActivated, this, &VideoRecentListWidget::onItemActivated);
 
     // Add the buttons to the horizontal box layout
-    m_pControlsLayout->addWidget(m_pUpButton);
-    m_pControlsLayout->addWidget(m_pDownButton);
-    m_pControlsLayout->addWidget(m_pRemoveButton);
-    m_pControlsLayout->addWidget(m_pClearButton);
+    QHBoxLayout *pControlsLayout = new QHBoxLayout;
+    pControlsLayout->addWidget(m_pUpButton);
+    pControlsLayout->addWidget(m_pDownButton);
+    pControlsLayout->addWidget(m_pRemoveButton);
+    pControlsLayout->addWidget(m_pClearButton);
 
     // Add the items to the main layout
     m_pMainLayout->addWidget(m_pTitleLabel);
     m_pMainLayout->addWidget(m_pListWidget);
-    m_pMainLayout->addLayout(m_pControlsLayout);
+    m_pMainLayout->addLayout(pControlsLayout);
 
     // Set the layout of this widget to be the main layout
     this->setLayout(m_pMainLayout);
+}
+
+
+// ========= PUBLIC FUNCTIONS
+
+int VideoRecentListWidget::itemCount() const {
+    return m_pListWidget->count();
 }
 
 
@@ -75,12 +87,8 @@ void VideoRecentListWidget::push(const QString &path, const QUrl &url) {
     // Insert the new QListWidgetItem at the beginning of the QListWidget and set the current row to the top
     m_pListWidget->insertItem(0, item);
     m_pListWidget->setCurrentRow(0);
-    updateTitleLabel();
-
-    if (m_pListWidget->count() == 1) {  
-        // Implies count was previously 0, enable all of the tool buttons
-        m_pControlsLayout->setEnabled(true);
-    }
+    this->updateTitleLabel();
+    this->setControlButtonsEnabled(true);
 }
 
 
@@ -89,6 +97,7 @@ void VideoRecentListWidget::push(const QString &path, const QUrl &url) {
 void VideoRecentListWidget::onDownButtonClicked() {
     auto index = m_pListWidget->currentRow() + 1;
     m_pListWidget->setCurrentRow(index % m_pListWidget->count(), QItemSelectionModel::ClearAndSelect);
+
 }
 
 void VideoRecentListWidget::onUpButtonClicked() {
@@ -108,8 +117,8 @@ void VideoRecentListWidget::onClearButtonClicked() {
     // If the user clicked 'Ok', clear the list widget and update controls
     if (alert.exec() == QMessageBox::Ok) {
         m_pListWidget->clear();
-        updateTitleLabel();
-        m_pControlsLayout->setEnabled(false);
+        this->updateTitleLabel();
+        this->setControlButtonsEnabled(false);
     }
 }
 
@@ -127,8 +136,8 @@ void VideoRecentListWidget::onRemoveButtonClicked() {
         auto item = m_pListWidget->takeItem(m_pListWidget->currentRow());
         delete item;
         item = nullptr;
-        updateTitleLabel();
-        m_pControlsLayout->setEnabled(m_pListWidget->count() == 0);
+        this->updateTitleLabel();
+        this->setControlButtonsEnabled(m_pListWidget->count() > 0);
     }    
 }
 
@@ -145,4 +154,11 @@ void VideoRecentListWidget::updateTitleLabel() {
     m_pTitleLabel->setText(QString("%1 %2")
                             .arg(QString(TITLE))
                             .arg(QString::number(m_pListWidget->count())));
+}
+
+void VideoRecentListWidget::setControlButtonsEnabled(bool enabled) {
+    m_pDownButton->setEnabled(enabled);
+    m_pUpButton->setEnabled(enabled);
+    m_pClearButton->setEnabled(enabled);
+    m_pRemoveButton->setEnabled(enabled);
 }

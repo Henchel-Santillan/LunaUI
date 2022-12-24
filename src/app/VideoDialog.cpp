@@ -6,6 +6,7 @@
 
 #include <QAudioDevice>
 #include <QAudioOutput>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -28,40 +29,43 @@ VideoDialog::VideoDialog(QWidget *pParent)
     , m_pRecentListWidget(new VideoRecentListWidget)
     , m_pVideoWidget(new VideoWidget)
     , m_pDeviceBox(nullptr)
-    , m_pDurationLabel(new QLabel)
+    , m_pLoopCheckBox(new QCheckBox("Loop"))
+    , m_pDurationLabel(new QLabel("--|--"))
     , m_pDurationSlider(new QSlider(Qt::Horizontal))
     , m_pErrorLabel(new QLabel)
     , m_pStatusLabel(new QLabel)
     , m_pMediaPlayer(new QMediaPlayer(this))
     , m_pAudioOutput(new QAudioOutput(this))
     , m_duration(0)
-{   
-    // Media Player
-    m_pMediaPlayer->setAudioOutput(m_pAudioOutput);
-    m_pMediaPlayer->setVideoOutput(m_pVideoWidget);
+{
+    if (!m_pMediaPlayer->isAvailable()) {
+        // Show an alert if it is determined that the MediaPlayer instance is not available
+        QMessageBox::warning(this, "Media Player Warning", "Media Player not available.");
+
+        // Disable controls, since there should be no items in the Recent list widget to select as sources for the Media Player
+        m_pControlsWidget->setEnabled(false);
+        m_pVideoWidget->setEnabled(false);
+        m_pRecentListWidget->setEnabled(false);
+
+        if (m_pDeviceBox != nullptr) {
+            m_pDeviceBox->setEnabled(false);
+        }
+    }
 
     QObject::connect(m_pMediaPlayer, &QMediaPlayer::durationChanged, this, &VideoDialog::onDurationChanged);
     QObject::connect(m_pMediaPlayer, &QMediaPlayer::errorChanged, this, &VideoDialog::onErrorChanged);
     QObject::connect(m_pMediaPlayer, &QMediaPlayer::mediaStatusChanged, this, &VideoDialog::onMediaStatusChanged);
     QObject::connect(m_pMediaPlayer, &QMediaPlayer::positionChanged, this, &VideoDialog::onPositionChanged);
-
-    // Controls widget
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::openButtonClicked, this, &VideoDialog::open);
-
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::play, m_pMediaPlayer, &QMediaPlayer::play);
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::pause, m_pMediaPlayer, &QMediaPlayer::pause);
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::stop, m_pMediaPlayer, &QMediaPlayer::stop);
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::stop, m_pVideoWidget, QOverload<>::of(&QVideoWidget::update));
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::changeVolume, m_pAudioOutput, &QAudioOutput::setVolume);
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::changeMuted, m_pAudioOutput, &QAudioOutput::setMuted);
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::changeRate, m_pMediaPlayer, &QMediaPlayer::setPlaybackRate);
+    QObject::connect(m_pMediaPlayer, &QMediaPlayer::playbackStateChanged, this, &VideoDialog::onPlaybackStateChanged);
 
     // Recent List Widget
     QObject::connect(m_pRecentListWidget, &VideoRecentListWidget::itemActivated, this, &VideoDialog::onRecentListItemActivated);
 
     // Set up the viewer layout
     QHBoxLayout *pViewerLayout = new QHBoxLayout;
-    pViewerLayout->addWidget(m_pVideoWidget);
+    pViewerLayout->setSpacing(5);
+    pViewerLayout->setContentsMargins(0, 0, 0, 0);
+    pViewerLayout->addWidget(m_pVideoWidget, 2);
     pViewerLayout->addWidget(m_pRecentListWidget);
 
     // Set up the info layout
@@ -76,11 +80,14 @@ VideoDialog::VideoDialog(QWidget *pParent)
     pInfoLayout->addWidget(m_pStatusLabel);
 
     // Set up the duration layout
-    m_pDurationLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    m_pDurationLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     m_pDurationSlider->setTickPosition(QSlider::NoTicks);
     m_pDurationSlider->setMinimum(0);
-    QObject::connect(m_pDurationSlider, &QAbstractSlider::sliderMoved, this, &VideoDialog::onSliderMoved);
+    m_pDurationSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QObject::connect(m_pDurationSlider, &QAbstractSlider::sliderMoved, this, &VideoDialog::onDurationSliderMoved);
+
+    QObject::connect(m_pLoopCheckBox, &QCheckBox::stateChanged, this, &VideoDialog::onLoopStateChanged);
 
     QHBoxLayout *pDurationLayout = new QHBoxLayout;
 
@@ -101,11 +108,22 @@ VideoDialog::VideoDialog(QWidget *pParent)
 
     pDurationLayout->addWidget(m_pDurationSlider);
     pDurationLayout->addWidget(m_pDurationLabel);
+    pDurationLayout->addWidget(m_pLoopCheckBox);
+    pDurationLayout->setContentsMargins(100, 0, 100, 0);
 
     // Set up the controls layout
     QVBoxLayout *pControlsLayout = new QVBoxLayout;
-    pControlsLayout->addWidget(m_pControlsWidget);
     pControlsLayout->addLayout(pDurationLayout);
+    pControlsLayout->addWidget(m_pControlsWidget);
+
+    // Controls widget
+    QObject::connect(m_pControlsWidget, &VideoControlsWidget::openButtonClicked, this, &VideoDialog::open);
+
+    QObject::connect(m_pControlsWidget, &VideoControlsWidget::play, m_pMediaPlayer, &QMediaPlayer::play);
+    QObject::connect(m_pControlsWidget, &VideoControlsWidget::pause, m_pMediaPlayer, &QMediaPlayer::pause);
+    QObject::connect(m_pControlsWidget, &VideoControlsWidget::stop, m_pMediaPlayer, &QMediaPlayer::stop);
+    QObject::connect(m_pControlsWidget, &VideoControlsWidget::stop, m_pVideoWidget, QOverload<>::of(&QVideoWidget::update));
+    QObject::connect(m_pControlsWidget, &VideoControlsWidget::changeRate, m_pMediaPlayer, &QMediaPlayer::setPlaybackRate);
 
     // Set up the main layout
     QVBoxLayout *pDialogLayout = new QVBoxLayout;
@@ -113,16 +131,13 @@ VideoDialog::VideoDialog(QWidget *pParent)
     pDialogLayout->addLayout(pInfoLayout);
     pDialogLayout->addLayout(pControlsLayout);
 
+    pDialogLayout->setAlignment(pControlsLayout, Qt::AlignCenter);
+
     this->insertLayoutAt(0, pDialogLayout);
 
-    if (!m_pMediaPlayer->isAvailable()) {
-        // Show an alert if it is determined that the MediaPlayer instance is not available
-        QMessageBox::warning(this, "Media Player Warning", "Media Player not available.");
-
-        // Disable controls
-        pControlsLayout->setEnabled(false);
-        pViewerLayout->setEnabled(false);
-    }
+    // Media Player
+    m_pMediaPlayer->setAudioOutput(m_pAudioOutput);
+    m_pMediaPlayer->setVideoOutput(m_pVideoWidget);
 }
 
 
@@ -145,10 +160,11 @@ void VideoDialog::open() {
 
         // Start the MediaPlayer
         m_pMediaPlayer->setSource(url);
+        m_pMediaPlayer->play();
     }
 }
 
-void VideoDialog::onSliderMoved(int seconds) {
+void VideoDialog::onDurationSliderMoved(int seconds) {
     m_pMediaPlayer->setPosition(seconds);
 }
 
@@ -168,32 +184,52 @@ void VideoDialog::onErrorChanged() {
 }
 
 void VideoDialog::onMediaStatusChanged(QMediaPlayer::MediaStatus status) {
-    QString label("[STATUS] ");
+    QString label("[MEDIA STATUS] ");
 
     switch (status) {
-        case QMediaPlayer::LoadingMedia:
-            label.append("Loading");
-            break;
-        case QMediaPlayer::BufferingMedia:
-        case QMediaPlayer::BufferedMedia:
-            label.append("Buffering");
-            break;
-        case QMediaPlayer::StalledMedia:
-            label.append("Stalled");
-            break;
-        case QMediaPlayer::InvalidMedia:
-            label.append("Invalid Media");
-            onErrorChanged();
-            break;
-        case QMediaPlayer::NoMedia:
-            label.append("No Media");
-            break;
-        case QMediaPlayer::LoadedMedia:
-            label.append("Loaded Media");
-            break;
-        default:
-            label.append("");
-            break;
+    case QMediaPlayer::LoadingMedia:
+        label.append("Loading");
+        break;
+    case QMediaPlayer::BufferingMedia:
+    case QMediaPlayer::BufferedMedia:
+        label.append("Buffering");
+        break;
+    case QMediaPlayer::StalledMedia:
+        label.append("Stalled");
+        break;
+    case QMediaPlayer::InvalidMedia:
+        label.append("Invalid Media");
+        onErrorChanged();
+        break;
+    case QMediaPlayer::NoMedia:
+        label.append("No Media");
+        break;
+    case QMediaPlayer::LoadedMedia:
+        label.append("Loaded");
+        break;
+    case QMediaPlayer::EndOfMedia:
+        label.append("End of Media");
+        break;
+    }
+
+    m_pStatusLabel->setText(label);
+}
+
+void VideoDialog::onPlaybackStateChanged(QMediaPlayer::PlaybackState state) {
+    m_pControlsWidget->onPlaybackStateChanged(state);
+
+    QString label("[PLAYBACK STATUS] ");
+
+    switch (state) {
+    case QMediaPlayer::StoppedState:
+        label.append("Media stopped");
+        break;
+    case QMediaPlayer::PausedState:
+        label.append("Media paused");
+        break;
+    case QMediaPlayer::PlayingState:
+        label.append("Media playing");
+        break;
     }
 
     m_pStatusLabel->setText(label);
@@ -225,4 +261,17 @@ void VideoDialog::onDeviceActivated(int index) {
 
 void VideoDialog::onRecentListItemActivated(const QUrl &url) {
     m_pMediaPlayer->setSource(url);
+    m_pMediaPlayer->play();
+}
+
+void VideoDialog::onLoopStateChanged(int state) {
+    switch (state) {
+    case Qt::Unchecked:
+        m_pMediaPlayer->setLoops(QMediaPlayer::Once);
+        break;
+    case Qt::Checked:
+        m_pMediaPlayer->setLoops(QMediaPlayer::Infinite);
+        break;
+    default: break;
+    }
 }

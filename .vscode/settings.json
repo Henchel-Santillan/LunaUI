@@ -2,6 +2,7 @@
     "files.associations": {
         "string": "cpp",
         "xstring": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "iosfwd": "cpp"
     }
 }

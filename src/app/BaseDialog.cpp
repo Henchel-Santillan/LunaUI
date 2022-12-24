@@ -4,9 +4,13 @@
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QLayout>
+#include <QPainter>
 #include <QPaintEvent>
 #include <QPushButton>
 #include <QShowEvent>
+#include <QSizePolicy>
+#include <QStyle>
+#include <QStyleOption>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -14,10 +18,14 @@
 // ========== CONSTRUCTOR DEFINITION
 
 BaseDialog::BaseDialog(QWidget *pParent) 
-    : m_pParent(dynamic_cast<BaseDialog*>(pParent))
-    , m_pMainLayout(new QVBoxLayout)
+    : QDialog(pParent)
+    , m_pParent(dynamic_cast<BaseDialog*>(pParent))
+    , m_pMainWidget(new QWidget(this))
+    , m_pMainLayout(new QVBoxLayout(m_pMainWidget))
     , m_pBackButton(new QPushButton("Back"))
 {
+    m_pMainWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+
     m_pBackButton->setEnabled(pParent != nullptr);
     m_pBackButton->setVisible(pParent != nullptr);
 
@@ -78,6 +86,13 @@ void BaseDialog::keyPressEvent(QKeyEvent *pEvent) {
         QDialog::keyPressEvent(pEvent);
         break;
     }
+}
+
+void BaseDialog::paintEvent(QPaintEvent *pEvent) {
+    QStyleOption option;
+    option.initFrom(this);
+    QPainter painter(this);
+    this->style()->drawPrimitive(QStyle::PE_Widget, &option, &painter, this);
 }
 
 void BaseDialog::showEvent(QShowEvent *pEvent) {

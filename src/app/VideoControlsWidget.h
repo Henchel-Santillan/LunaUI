@@ -18,23 +18,17 @@ public:
 
 public slots:
     void onPlaybackStateChanged(QMediaPlayer::PlaybackState state);
-    void onChangeVolume(float volume);
-    void onChangeMuted(bool muted);
     void onChangeRate(qreal rate);
 
 signals:
     void play();
     void pause();
     void stop();
-    void changeVolume(float volume);
-    void changeMuted(bool muted);
     void changeRate(qreal rate);
     void openButtonClicked();
 
 private slots:
     void onPlayPauseButtonClicked();
-    void onMuteButtonClicked();
-    void onVolumeSliderValueChanged();
     void onRateActivated();
 
 private:
@@ -44,9 +38,6 @@ private:
 
     QToolButton *m_pStopButton;
     QToolButton *m_pPlayPauseButton;
-    QToolButton *m_pMuteButton;
-
-    QSlider *m_pVolumeSlider;
 
     QComboBox *m_pRateBox;
 

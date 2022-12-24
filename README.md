@@ -31,7 +31,7 @@ cmake -DCMAKE_PREFIX_PATH=<QT_INSTALL_DIR>\<QT_VERSION>\<MINGW_ARCH>\lib\cmake -
 
 * `<QT_INSTALL_DIR>` is the install path you specified using the online installer (e.g. `C:\Qt\` on Windows)
 * `<QT_VERSION>` is the full Qt version of your installation, e.g. `6.4.1`
-* `<MINGW_VERSION_ARCH>` is MinGW bundled with the Qt installation, specifying both version and architecture (e.g. `mingw1120_6`)
+* `<MINGW_VERSION_ARCH>` is MinGW bundled with the Qt installation, specifying both version and architecture (e.g. `mingw1120_64`)
 
 4. Run the `ninja` command.
 5. Run `start LunaUI.exe`.

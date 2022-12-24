@@ -6,15 +6,22 @@
 #include <QSizePolicy>
 
 
+// ========== CONSTANTS
+
+static constexpr int VGA_PIXELS_PER_LINE = 640;
+static constexpr int VGA_LINES = 480;
+
+
 // ========== CONSTRUCTOR DEFINITION
 
 VideoWidget::VideoWidget(QWidget *pParent)
     : QVideoWidget(pParent)
 {
-    this->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     QPalette palette = this->palette();
     palette.setColor(QPalette::Window, Qt::black);
     this->setPalette(palette);
+    this->resize(VGA_PIXELS_PER_LINE, VGA_LINES);
 }
 
 

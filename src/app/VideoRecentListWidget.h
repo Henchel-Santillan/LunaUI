@@ -19,6 +19,8 @@ class VideoRecentListWidget : public QWidget {
 public:
     explicit VideoRecentListWidget(QWidget *pParent = nullptr);
 
+    int itemCount() const;
+
 public slots:
     void push(const QString &path, const QUrl &url);
 
@@ -35,10 +37,10 @@ private slots:
 private:
     // Functions
     void updateTitleLabel();
+    void setControlButtonsEnabled(bool enabled);
 
     // Data Members
     QVBoxLayout *m_pMainLayout;
-    QHBoxLayout *m_pControlsLayout;
 
     QListWidget *m_pListWidget;
     QLabel *m_pTitleLabel;          // Format: Recent (Count) 
@@ -47,7 +49,6 @@ private:
     QToolButton *m_pUpButton;
     QToolButton *m_pClearButton;
     QToolButton *m_pRemoveButton;
-    QToolButton *m_pSelectButton;   // Is equivalent to item activation
 };
 
 #endif // LUNAUI_VIDEORECENTLISTWIDGET_H

@@ -10,6 +10,7 @@ class VideoRecentListWidget;
 class VideoWidget;
 
 class QAudioOutput;
+class QCheckBox;
 class QComboBox;
 class QLabel;
 class QSlider;
@@ -23,15 +24,17 @@ public:
 
 private slots:
     void open();
-    void onSliderMoved(int seconds);
+    void onDurationSliderMoved(int seconds);
 
     void onDurationChanged(qint64 duration);
     void onErrorChanged();
     void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
+    void onPlaybackStateChanged(QMediaPlayer::PlaybackState status);
     void onPositionChanged(qint64 progress);
-    
+
     void onDeviceActivated(int index);
     void onRecentListItemActivated(const QUrl &url);
+    void onLoopStateChanged(int state);
 
 private:
     VideoControlsWidget *m_pControlsWidget;
@@ -39,6 +42,7 @@ private:
     VideoWidget *m_pVideoWidget;
 
     QComboBox *m_pDeviceBox;
+    QCheckBox *m_pLoopCheckBox;
 
     QLabel *m_pDurationLabel;
     QSlider *m_pDurationSlider;
