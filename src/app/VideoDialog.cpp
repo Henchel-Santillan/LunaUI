@@ -21,6 +21,11 @@
 #include <QVBoxLayout>
 
 
+// ========== CONSTANTS
+
+static constexpr const char *DURATION_DEFAULT = "--:--:--";
+
+
 // ========== CONSTRUCTOR DEFINITION
 
 VideoDialog::VideoDialog(QWidget *pParent)
@@ -30,7 +35,7 @@ VideoDialog::VideoDialog(QWidget *pParent)
     , m_pVideoWidget(new VideoWidget)
     , m_pDeviceBox(nullptr)
     , m_pLoopCheckBox(new QCheckBox("Loop"))
-    , m_pDurationLabel(new QLabel("--|--"))
+    , m_pDurationLabel(new QLabel(QString(DURATION_DEFAULT)))
     , m_pDurationSlider(new QSlider(Qt::Horizontal))
     , m_pErrorLabel(new QLabel)
     , m_pStatusLabel(new QLabel)
@@ -80,10 +85,10 @@ VideoDialog::VideoDialog(QWidget *pParent)
     pInfoLayout->addWidget(m_pStatusLabel);
 
     // Set up the duration layout
-    m_pDurationLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    m_pDurationLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
     m_pDurationSlider->setTickPosition(QSlider::NoTicks);
-    m_pDurationSlider->setMinimum(0);
+    m_pDurationSlider->setRange(0, m_pMediaPlayer->duration());
     m_pDurationSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QObject::connect(m_pDurationSlider, &QAbstractSlider::sliderMoved, this, &VideoDialog::onDurationSliderMoved);
 
@@ -119,10 +124,9 @@ VideoDialog::VideoDialog(QWidget *pParent)
     // Controls widget
     QObject::connect(m_pControlsWidget, &VideoControlsWidget::openButtonClicked, this, &VideoDialog::open);
 
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::play, m_pMediaPlayer, &QMediaPlayer::play);
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::pause, m_pMediaPlayer, &QMediaPlayer::pause);
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::stop, m_pMediaPlayer, &QMediaPlayer::stop);
-    QObject::connect(m_pControlsWidget, &VideoControlsWidget::stop, m_pVideoWidget, QOverload<>::of(&QVideoWidget::update));
+    QObject::connect(m_pControlsWidget, &VideoControlsWidget::playPauseButtonClicked, this, &VideoDialog::onPlayPauseButtonClicked);
+    QObject::connect(m_pControlsWidget, &VideoControlsWidget::stopButtonClicked, this, &VideoDialog::onStopButtonClicked);
+    QObject::connect(m_pControlsWidget, &VideoControlsWidget::stopButtonClicked, m_pVideoWidget, QOverload<>::of(&QVideoWidget::update));
     QObject::connect(m_pControlsWidget, &VideoControlsWidget::changeRate, m_pMediaPlayer, &QMediaPlayer::setPlaybackRate);
 
     // Set up the main layout
@@ -174,6 +178,7 @@ void VideoDialog::onDurationChanged(qint64 duration) {
 }
 
 void VideoDialog::onErrorChanged() {
+    m_pDurationLabel->setText(QString(DURATION_DEFAULT));
     if (m_pMediaPlayer->error() != QMediaPlayer::NoError) {
         // Update the error label with the QMediaPlayer Error
         m_pErrorLabel->setText("[ERROR] " + m_pMediaPlayer->errorString());
@@ -242,13 +247,12 @@ void VideoDialog::onPositionChanged(qint64 progress) {
 
     // Update the duration label
     qint64 durationInfo = progress / 1000;
-    QString timeString("%1 %2 %3");
+    QString timeString;
 
     if (durationInfo != 0 || m_duration != 0) {
         QTime current((durationInfo / 3600) % 60, (durationInfo / 60) % 60, durationInfo % 60, (durationInfo * 1000) % 1000);
-        QTime total((m_duration / 3600) % 60, (m_duration / 60) % 60, m_duration % 60, (m_duration * 1000) % 1000);
         QString timeFormat = (m_duration > 3600 /* 1 hour */) ? "hh:mm:ss" : "mm:ss";
-        timeString = current.toString(timeFormat) + " | " + total.toString(timeFormat); 
+        timeString = current.toString(timeFormat);
     }
 
     m_pDurationLabel->setText(timeString);
@@ -274,4 +278,21 @@ void VideoDialog::onLoopStateChanged(int state) {
         break;
     default: break;
     }
+}
+
+void VideoDialog::onPlayPauseButtonClicked() {
+    switch (m_pMediaPlayer->playbackState()) {
+    case QMediaPlayer::PausedState:
+        m_pMediaPlayer->play();
+        break;
+    case QMediaPlayer::PlayingState:
+        m_pMediaPlayer->pause();
+        break;
+    }
+}
+
+void VideoDialog::onStopButtonClicked() {
+    m_pMediaPlayer->stop();
+    m_pDurationLabel->setText(QString(DURATION_DEFAULT));
+    m_pMediaPlayer->setSource(QUrl());
 }

@@ -21,14 +21,12 @@ public slots:
     void onChangeRate(qreal rate);
 
 signals:
-    void play();
-    void pause();
-    void stop();
+    void stopButtonClicked();
     void changeRate(qreal rate);
     void openButtonClicked();
+    void playPauseButtonClicked();
 
 private slots:
-    void onPlayPauseButtonClicked();
     void onRateActivated();
 
 private:
@@ -42,7 +40,6 @@ private:
     QComboBox *m_pRateBox;
 
     QMediaPlayer::PlaybackState m_playbackState;
-    bool m_muted;
 };
 
 #endif // LUNAUI_VIDEOCONTROLSWIDGET_H

@@ -1,3 +1,5 @@
+:: Builds the LunaUI using CMake and the Ninja generator.
+
 :: Variables used for cmake options. These are configurable and are user-dependent.
 set PREFIX_PATH=C:\Qt\6.4.1\mingw_64\lib\cmake
 set DEBUG_TYPE_STRING=Debug

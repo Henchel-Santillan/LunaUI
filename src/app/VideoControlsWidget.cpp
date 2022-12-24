@@ -21,15 +21,14 @@ VideoControlsWidget::VideoControlsWidget(QWidget *pParent)
     , m_pPlayPauseButton(new QToolButton)
     , m_pRateBox(new QComboBox)
     , m_playbackState(QMediaPlayer::StoppedState)
-    , m_muted(false)
 {
     QObject::connect(m_pOpenButton, &QAbstractButton::clicked, this, &VideoControlsWidget::openButtonClicked);
 
     m_pStopButton->setIcon(this->style()->standardIcon(QStyle::SP_MediaStop));
-    QObject::connect(m_pStopButton, &QAbstractButton::clicked, this, &VideoControlsWidget::stop);
+    QObject::connect(m_pStopButton, &QAbstractButton::clicked, this, &VideoControlsWidget::stopButtonClicked);
 
     m_pPlayPauseButton->setIcon(this->style()->standardIcon(QStyle::SP_MediaPlay));
-    QObject::connect(m_pPlayPauseButton, &QAbstractButton::clicked, this, &VideoControlsWidget::onPlayPauseButtonClicked);
+    QObject::connect(m_pPlayPauseButton, &QAbstractButton::clicked, this, &VideoControlsWidget::playPauseButtonClicked);
 
     m_pRateBox->addItem("0.5", QVariant(0.5));
     m_pRateBox->addItem("1.0", QVariant(1.0));
@@ -60,10 +59,9 @@ VideoControlsWidget::VideoControlsWidget(QWidget *pParent)
 // ========== PUBLIC SLOTS
 
 void VideoControlsWidget::onPlaybackStateChanged(QMediaPlayer::PlaybackState state) {
-    if (m_playbackState == state) 
-        return;
-    
-    switch (state) {
+    m_playbackState = state;
+
+    switch (m_playbackState) {
     case QMediaPlayer::StoppedState:
         m_pStopButton->setEnabled(false);
         m_pPlayPauseButton->setIcon(this->style()->standardIcon(QStyle::SP_MediaPlay));
@@ -77,8 +75,6 @@ void VideoControlsWidget::onPlaybackStateChanged(QMediaPlayer::PlaybackState sta
         m_pPlayPauseButton->setIcon(this->style()->standardIcon(QStyle::SP_MediaPause));
         break;
     }
-
-    m_playbackState = state;
 }
 
 void VideoControlsWidget::onChangeRate(qreal rate) {
@@ -91,20 +87,6 @@ void VideoControlsWidget::onChangeRate(qreal rate) {
 
 
 // ========== PRIVATE SLOTS
-
-void VideoControlsWidget::onPlayPauseButtonClicked() {
-    switch (m_playbackState) {
-    case QMediaPlayer::StoppedState:
-        emit stop();
-        break;
-    case QMediaPlayer::PausedState:
-        emit pause();
-        break;
-    case QMediaPlayer::PlayingState:
-        emit play();
-        break;
-    }
-}
 
 void VideoControlsWidget::onRateActivated() {
     emit changeRate(qreal(m_pRateBox->itemData(m_pRateBox->currentIndex()).toDouble()));

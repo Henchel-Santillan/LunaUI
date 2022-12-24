@@ -29,12 +29,14 @@ private slots:
     void onDurationChanged(qint64 duration);
     void onErrorChanged();
     void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
-    void onPlaybackStateChanged(QMediaPlayer::PlaybackState status);
+    void onPlaybackStateChanged(QMediaPlayer::PlaybackState state);
     void onPositionChanged(qint64 progress);
 
     void onDeviceActivated(int index);
     void onRecentListItemActivated(const QUrl &url);
     void onLoopStateChanged(int state);
+    void onPlayPauseButtonClicked();
+    void onStopButtonClicked();
 
 private:
     VideoControlsWidget *m_pControlsWidget;
