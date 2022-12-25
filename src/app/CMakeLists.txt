@@ -3,11 +3,27 @@ add_executable(${PROJECT_NAME}
     # Base Classes
     BaseDialog.cpp
 
+    # Diagnostics
+    SerialControlsWidget.cpp
+    SerialPortConfigurationWizardPage.cpp
+    SerialPortOpBase.cpp
+    SerialPortReader.cpp
+    SerialPortSelectionWizardPage.cpp
+    SerialPortWizard.cpp
+    SerialPortWriter.cpp
+    SerialViewDialog.cpp
+    SerialViewWidget.cpp
+
+    # LiveFeed
+
+
     # Video Player
     VideoControlsWidget.cpp
     VideoDialog.cpp
     VideoRecentListWidget.cpp
     VideoWidget.cpp
+
+    # Executable
     main.cpp
 )
 
