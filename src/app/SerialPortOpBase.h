@@ -1,5 +1,5 @@
-#ifndef PUSHUI_INCLUDE_SERIALPORTOPBASE_H
-#define PUSHUI_INCLUDE_SERIALPORTOPBASE_H
+#ifndef LUNAUI_SERIALPORTOPBASE_H
+#define LUNAUI_SERIALPORTOPBASE_H
 
 #include <QObject>
 #include <QSerialPort>
@@ -25,4 +25,4 @@ protected:
     QTimer m_timer;
 };
 
-#endif // PUSHUI_INCLUDE_SERIALPORTOPBASE_H
+#endif // LUNAUI_SERIALPORTOPBASE_H

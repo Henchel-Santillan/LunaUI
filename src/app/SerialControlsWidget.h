@@ -1,5 +1,5 @@
-#ifndef PUSHUI_INCLUDE_SERIALCONTROLSWIDGET_H
-#define PUSHUI_INCLUDE_SERIALCONTROLSWIDGET_H
+#ifndef LUNAUI_SERIALCONTROLSWIDGET_H
+#define LUNAUI_SERIALCONTROLSWIDGET_H
 
 #include <QWidget>
 #include <QIODeviceBase>
@@ -9,7 +9,6 @@ class QButtonGroup;
 class QHBoxLayout;
 class QPushButton;
 class QSpinBox;
-class QVBoxLayout;
 
 class SerialControlsWidget : public QWidget {
     Q_OBJECT
@@ -29,18 +28,15 @@ signals:
     void sendRequested(int data);
 
 private slots:
-    void onRwGroupButtonClicked(QAbstractButton *pButton);
     void onStartButtonClicked();
     void onSendButtonClicked();
 
 private:
-    QVBoxLayout *m_pMainLayout;
-
     QPushButton *m_pConfigureButton;
     QPushButton *m_pStartRequestButton;
     QPushButton *m_pEndRequestButton;
-
     QPushButton *m_pSendButton;
+
     QSpinBox *m_pSendBox;
     QButtonGroup *m_pRwGroup;
 
@@ -48,4 +44,4 @@ private:
     QIODeviceBase::OpenMode m_openMode;
 };
 
-#endif // PUSHUI_INCLUDE_SERIALCONTROLSWIDGET_H
+#endif // LUNAUI_SERIALCONTROLSWIDGET_H

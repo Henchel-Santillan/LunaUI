@@ -5,10 +5,11 @@ add_executable(${PROJECT_NAME}
 
     # Diagnostics
     SerialControlsWidget.cpp
-    SerialPortConfigurationWizardPage.cpp
+    SerialPortComboBox.cpp
+    SerialPortConfigureWizardPage.cpp
     SerialPortOpBase.cpp
     SerialPortReader.cpp
-    SerialPortSelectionWizardPage.cpp
+    SerialPortSelectWizardPage.cpp
     SerialPortWizard.cpp
     SerialPortWriter.cpp
     SerialViewDialog.cpp

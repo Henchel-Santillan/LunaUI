@@ -1,10 +1,9 @@
-#ifndef PUSHUI_INCLUDE_SERIALVIEWWIDGET_H
-#define PUSHUI_INCLUDE_SERIALVIEWWIDGET_H
+#ifndef LUNAUI_SERIALVIEWWIDGET_H
+#define LUNAUI_SERIALVIEWWIDGET_H
 
 #include <QWidget>
 
 class QListWidget;
-class QHBoxLayout;
 
 static constexpr int LOG_CAPACITY = 20;
 
@@ -23,16 +22,12 @@ public slots:
 
 private:
     // Functions
-
     bool tryTakeFromMessages();
     bool tryTakeFromData();
 
     // Data members
-
-    QHBoxLayout *m_pMainLayout;
-
     QListWidget *m_pMessageList;
     QListWidget *m_pDataList;
 };
 
-#endif // PUSHUI_INCLUDE_SERIALVIEWWIDGET_H
+#endif // LUNAUI_SERIALVIEWWIDGET_H

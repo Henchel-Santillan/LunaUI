@@ -8,6 +8,7 @@
 #include <QSpinBox>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QSizePolicy>
 #include <QVBoxLayout>
 
 
@@ -15,7 +16,6 @@
 
 SerialControlsWidget::SerialControlsWidget(QWidget *pParent)
     : QWidget(pParent)
-    , m_pMainLayout(new QVBoxLayout)
     , m_pConfigureButton(new QPushButton("Configure"))
     , m_pStartRequestButton(new QPushButton("Start"))
     , m_pEndRequestButton(new QPushButton("End"))
@@ -30,19 +30,29 @@ SerialControlsWidget::SerialControlsWidget(QWidget *pParent)
     QObject::connect(m_pEndRequestButton, &QAbstractButton::clicked, this, &SerialControlsWidget::endRequested);
     QObject::connect(m_pSendButton, &QAbstractButton::clicked, this, &SerialControlsWidget::onSendButtonClicked);
 
+    m_pConfigureButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
     // Must configure a serial port first before being allowed to start a R/W operation
     m_pStartRequestButton->setEnabled(false);
+    m_pStartRequestButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     // A serial port must be open and actively connected to allow an end request to occur
     m_pEndRequestButton->setEnabled(false);
+    m_pEndRequestButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    QLabel *pSendLabel = new QLabel("0x");
+    pSendLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     // Write mode must be selected for this button to be enabled
     // Basic validation must also be met
     m_pSendButton->setEnabled(false);
+    m_pSendButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     // Set up the QSpinBox. Currently, only commands for LCD diagnostics are supported
     m_pSendBox->setRange(0, 255);
     m_pSendBox->setDisplayIntegerBase(16);  // Hexadecimal
+    m_pSendBox->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    m_pSendBox->setEnabled(false);
 
     // Set up the QButtonGroup for read and write
     QRadioButton *pReadButton = new QRadioButton("Read");
@@ -57,35 +67,52 @@ SerialControlsWidget::SerialControlsWidget(QWidget *pParent)
     m_pRwGroup->addButton(pReadWriteButton, 2);
 
     QObject::connect(m_pRwGroup, QOverload<QAbstractButton*>::of(&QButtonGroup::buttonClicked), [=](QAbstractButton *pButton) {
-        onRwGroupButtonClicked(pButton);
+        switch (m_pRwGroup->id(pButton)) {
+        case 0:     // Read
+            m_pSendBox->setEnabled(false);
+            m_openMode = QIODeviceBase::ReadOnly;
+            break;
+        case 1:     // Write
+            m_pSendBox->setEnabled(true);
+            m_openMode = QIODeviceBase::WriteOnly;
+            break;
+        case 2:
+            m_pSendBox->setEnabled(true);
+            m_openMode = QIODeviceBase::ReadWrite;
+            break;
+        }
     });
 
     // Add the buttons to a QGroupBox
-    QVBoxLayout *pButtonLayout = new QVBoxLayout;
-    pButtonLayout->addWidget(pReadButton);
-    pButtonLayout->addWidget(pWriteButton);
-    pButtonLayout->addWidget(pReadWriteButton);
+    QVBoxLayout *pRadioButtonLayout = new QVBoxLayout;
+    pRadioButtonLayout->addWidget(pReadButton);
+    pRadioButtonLayout->addWidget(pWriteButton);
+    pRadioButtonLayout->addWidget(pReadWriteButton);
 
     QGroupBox *pGroupBox = new QGroupBox("Open Mode");
-    pGroupBox->setLayout(pButtonLayout);
+    pGroupBox->setLayout(pRadioButtonLayout);
 
     // Set up the widget layout
+    QVBoxLayout *pButtonLayout = new QVBoxLayout;
+    pButtonLayout->addWidget(m_pConfigureButton);
+    pButtonLayout->addWidget(m_pStartRequestButton);
+    pButtonLayout->addWidget(m_pEndRequestButton);
+
     QHBoxLayout *pTopControls = new QHBoxLayout;
-    pTopControls->addWidget(m_pConfigureButton, 0, Qt::AlignVCenter);
+    pTopControls->addLayout(pButtonLayout);
     pTopControls->addWidget(pGroupBox, 0, Qt::AlignVCenter);
-    pTopControls->addWidget(m_pStartRequestButton, 0, Qt::AlignVCenter);
-    pTopControls->addWidget(m_pEndRequestButton, 0, Qt::AlignVCenter);
 
     QHBoxLayout *pBottomControls = new QHBoxLayout;
-    pBottomControls->addWidget(new QLabel("0x"));   // Hexadecimal inputs expected
+    pBottomControls->addWidget(pSendLabel);   // Hexadecimal inputs expected
     pBottomControls->addWidget(m_pSendBox);
     pBottomControls->addWidget(m_pSendButton);
 
-    m_pMainLayout->addLayout(pTopControls);
-    m_pMainLayout->addLayout(pBottomControls);
+    QVBoxLayout *pMainLayout = new QVBoxLayout;
+    pMainLayout->addLayout(pTopControls);
+    pMainLayout->addLayout(pBottomControls);
 
     // Set the vertical box layout to be this widget's layout
-    this->setLayout(m_pMainLayout);
+    this->setLayout(pMainLayout);
 }
 
 
@@ -109,24 +136,6 @@ void SerialControlsWidget::setSendButtonEnabled(bool enabled) {
 
 
 // ========== PRIVATE SLOTS
-
-void SerialControlsWidget::onRwGroupButtonClicked(QAbstractButton *pButton) {
-    // Enable or disable the QSpinBox and the Send button depending on whether read or write is selected
-    switch (m_pRwGroup->id(pButton)) {
-    case 0:     // Read
-        m_pSendBox->setEnabled(true);
-        m_openMode = QIODeviceBase::ReadOnly;
-        break;
-    case 1:     // Write
-        m_pSendBox->setEnabled(false);
-        m_openMode = QIODeviceBase::WriteOnly;
-        break;
-    case 2:
-        m_pSendBox->setEnabled(true);
-        m_openMode = QIODeviceBase::ReadWrite;
-        break;
-    }
-}
 
 void SerialControlsWidget::onStartButtonClicked() {
     emit (m_openMode);

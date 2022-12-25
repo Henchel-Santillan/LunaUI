@@ -2,19 +2,24 @@
 
 #include <QHBoxLayout>
 #include <QListWidget>
+#include <QSizePolicy>
 
 
 // ========== CONSTRUCTOR DEFINITION
 
 SerialViewWidget::SerialViewWidget(QWidget *pParent)
     : QWidget(pParent)
-    , m_pMainLayout(new QHBoxLayout)
     , m_pMessageList(new QListWidget)
     , m_pDataList(new QListWidget)
 {
-    m_pMainLayout->addWidget(m_pMessageList, 5, Qt::AlignCenter);
-    m_pMainLayout->addWidget(m_pDataList, 5, Qt::AlignCenter);
-    this->setLayout(m_pMainLayout);
+    m_pMessageList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    m_pDataList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+
+    QHBoxLayout *pMainLayout = new QHBoxLayout;
+    pMainLayout->addWidget(m_pMessageList, 5, Qt::AlignCenter);
+    pMainLayout->addWidget(m_pDataList, 5, Qt::AlignCenter);
+
+    this->setLayout(pMainLayout);
 }
 
 

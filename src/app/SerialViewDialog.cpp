@@ -8,9 +8,10 @@
 
 #include <QByteArray>
 #include <QDataStream>
-#include <QJsonArray>
+#include <QList>
 #include <QMessageBox>
 #include <QSerialPortInfo>
+#include <QSizePolicy>
 #include <QVBoxLayout>
 
 
@@ -27,13 +28,11 @@ SerialViewDialog::SerialViewDialog(QWidget *pParent)
     , m_openMode()
 {
     // Connect signals to appropriate handlers
-    // Controls widget
     QObject::connect(m_pControlsWidget, &SerialControlsWidget::configureRequested, this, &SerialViewDialog::onConfigureRequested);
     QObject::connect(m_pControlsWidget, &SerialControlsWidget::startRequested, this, &SerialViewDialog::onStartRequested);
     QObject::connect(m_pControlsWidget, &SerialControlsWidget::endRequested, this, &SerialViewDialog::onEndRequested);
     QObject::connect(m_pControlsWidget, &SerialControlsWidget::sendRequested, this, &SerialViewDialog::onSendRequested);
 
-    // Port reader and writer
     QObject::connect(m_pReader, &SerialPortReader::eventMessageReady, m_pViewWidget, &SerialViewWidget::onEventMessageReady);
     QObject::connect(m_pWriter, &SerialPortWriter::eventMessageReady, m_pViewWidget, &SerialViewWidget::onEventMessageReady);
 
@@ -41,7 +40,14 @@ SerialViewDialog::SerialViewDialog(QWidget *pParent)
     QObject::connect(m_pWriter, &SerialPortWriter::eventDataWriteReady, m_pViewWidget, &SerialViewWidget::onEventDataWriteReady);
 
     // Prepare the dialog layout
+    QVBoxLayout *pDialogLayout = new QVBoxLayout;
+    pDialogLayout->addWidget(m_pViewWidget);
+    pDialogLayout->addWidget(m_pControlsWidget);
 
+    pDialogLayout->setAlignment(Qt::AlignCenter);
+    pDialogLayout->setContentsMargins(150, 0, 150, 0);
+
+    this->insertLayoutAt(0, pDialogLayout);
 }
 
 
@@ -51,20 +57,42 @@ void SerialViewDialog::onConfigureRequested() {
     // Show the configuration wizard and check for the resulting DialogCode
     if (m_pWizard->exec() == QDialog::Accepted) {
         // Obtain the port name and construct a QSerialPortInfo object using it
-        QString portName = (m_pWizard->field("comPortSelection")).toString();
-        QSerialPortInfo portInfo(portName);
+        QSerialPortInfo portInfo = m_pWizard->field("portBox").value<QSerialPortInfo>();
 
         // Construct a QSerialPort object using the QSerialPortInfo
         m_pSerialPort = new QSerialPort(portInfo, this);
 
         // Obtain the configuration values
-        QJsonArray configuration = (m_pWizard->field("comPortConfiguration")).toJsonArray();
-        QSerialPort::BaudRate baudRate = static_cast<QSerialPort::BaudRate>(configuration.at(0).toInt());
-        QSerialPort::DataBits dataBits = QSerialPort::Data8;
-        QSerialPort::FlowControl flowControl = static_cast<QSerialPort::FlowControl>(configuration.at(1).toInt());
-        QSerialPort::Parity parity = static_cast<QSerialPort::Parity>(configuration.at(2).toInt());
-        QSerialPort::StopBits stopBits = static_cast<QSerialPort::StopBits>(configuration.at(3).toInt());
-        QSerialPort::Direction direction = static_cast<QSerialPort::Direction>(configuration.at(4).toInt());
+        QSerialPort::BaudRate baudRate = m_pWizard->field("baudRateBox").value<QSerialPort::BaudRate>();
+        QSerialPort::DataBits dataBits = m_pWizard->field("dataBitsBox").value<QSerialPort::DataBits>();
+        QSerialPort::FlowControl flowControl = m_pWizard->field("flowControlBox").value<QSerialPort::FlowControl>();
+        QSerialPort::Parity parity = m_pWizard->field("parityBox").value<QSerialPort::Parity>();
+        QSerialPort::StopBits stopBits = m_pWizard->field("stopBitsBox").value<QSerialPort::StopBits>();
+
+        QList<QVariant> directionVariants = { m_pWizard->field("allButton"), 
+                                              m_pWizard->field("inputButton"),
+                                              m_pWizard->field("outputButton") }; 
+        
+        auto index = 0;
+        for (auto i = 0; i < directionVariants.count(); ++i) {
+            if (directionVariants.at(i).toBool()) {
+                index = i;
+                break;
+            }
+        }
+
+        QSerialPort::Direction direction;
+        switch (index) {
+        case 0:
+            direction = QSerialPort::AllDirections;
+            break;
+        case 1:
+            direction = QSerialPort::Input;
+            break;
+        case 2:
+            direction = QSerialPort::Output;
+            break;
+        }
 
         m_pSerialPort->setBaudRate(baudRate, direction);
         m_pSerialPort->setDataBits(dataBits);

@@ -1,7 +1,7 @@
 #include "SerialPortWizard.h"
 
-#include "SerialPortConfigurationWizardPage.h"
-#include "SerialPortSelectionWizardPage.h"
+#include "SerialPortConfigureWizardPage.h"
+#include "SerialPortSelectWizardPage.h"
 
 #include <QList>
 
@@ -11,8 +11,8 @@
 SerialPortWizard::SerialPortWizard(QWidget *pParent)
     : QWizard(pParent)
 {
-    this->addPage(new SerialPortConfigurationWizardPage);
-    this->addPage(new SerialPortSelectionWizardPage);
+    this->addPage(new SerialPortSelectWizardPage);
+    this->addPage(new SerialPortConfigureWizardPage);
 
     // Other wizard settings
     this->setWizardStyle(QWizard::ClassicStyle);
