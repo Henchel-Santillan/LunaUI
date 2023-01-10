@@ -4,7 +4,7 @@ LunaUI is a Qt6 Widgets-based desktop application that accompanies LunaSys, both
 
 ## Build Instructions
 
-At this time, only build instructions for Windows is available.
+At this time, only build instructions for Windows are available.
 
 ### Prerequisites
 LunaUI is developed using `Qt 6.4.1`, is built using `CMake` and `Ninja`, and is compiled using `MinGW 11.20` for 64-bit systems. Qt6 requires a minimum CMake version of `3.16`. The easiest way to satisfy these dependency requirements is to simply download the Qt for open-source development for free and check off MinGW, CMake, and Ninja using the Online Installer. On Windows, add g++ (from MinGW), CMake, and Ninja to the system PATH. Add the path to the Qt binaries (`<QT_INSTALL_DIR>\<QT_VERSION>\<MINGW_ARCH>\bin`) to the system PATH as well.
@@ -35,3 +35,9 @@ cmake -DCMAKE_PREFIX_PATH=<QT_INSTALL_DIR>\<QT_VERSION>\<MINGW_ARCH>\lib\cmake -
 
 4. Run the `ninja` command.
 5. Run `start LunaUI.exe`.
+
+An alternative to doing steps 3 to 5 is to use the build-lunaui.bat script in the `scripts` directory. Ensure that the cmake option variables are configured for your setup.
+
+## Pre-Release Omissions
+* Configuring blocking (polling) method to work with UART and STM32 Virtual COM Port Driver via Micro USB Type-B connection
+* Image Viewer feature module
