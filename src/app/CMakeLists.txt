@@ -7,11 +7,9 @@ add_executable(${PROJECT_NAME}
     SerialControlsWidget.cpp
     SerialPortComboBox.cpp
     SerialPortConfigureWizardPage.cpp
-    SerialPortOpBase.cpp
-    SerialPortReader.cpp
+    SerialPortManager.cpp
     SerialPortSelectWizardPage.cpp
     SerialPortWizard.cpp
-    SerialPortWriter.cpp
     SerialViewDialog.cpp
     SerialViewWidget.cpp
 

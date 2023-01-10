@@ -1,5 +1,6 @@
 #include "VideoRecentListWidget.h"
 
+#include <QAbstractItemView>
 #include <QHBoxLayout>
 #include <QItemSelectionModel>
 #include <QLabel>
@@ -53,6 +54,9 @@ VideoRecentListWidget::VideoRecentListWidget(QWidget *pParent)
 
     // Connect the QListWidget to item activation slot
     QObject::connect(m_pListWidget, &QListWidget::itemActivated, this, &VideoRecentListWidget::onItemActivated);
+
+    m_pListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_pListWidget->setUniformItemSizes(true);
 
     // Add the buttons to the horizontal box layout
     QHBoxLayout *pControlsLayout = new QHBoxLayout;

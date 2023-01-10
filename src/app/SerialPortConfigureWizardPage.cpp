@@ -93,12 +93,12 @@ SerialPortConfigureWizardPage::SerialPortConfigureWizardPage(QWidget *pParent)
     m_pStopBitsBox->setCurrentIndex(0);
     pAllButton->setChecked(true);
 
-    // Register the combo boxes and the radio buttons as mandatory fields
-    this->registerField("baudRateBox*", m_pBaudRateBox, "m_currentItemData", "currentItemDataChanged");
-    this->registerField("dataBitsBox*", m_pDataBitsBox, "m_currentItemData", "currentItemDataChanged");
-    this->registerField("flowControlBox*", m_pFlowControlBox, "m_currentItemData", "currentItemDataChanged");
-    this->registerField("parityBox*", m_pParityBox, "m_currentItemData", "currentItemDataChanged");
-    this->registerField("stopBitsBox*", m_pStopBitsBox, "m_currentItemData", "currentItemDataChanged");
+    // Register the combo boxes and the radio buttons as wizard fields
+    this->registerField("baudRateBox", m_pBaudRateBox, "m_currentItemData", "currentItemDataChanged");
+    this->registerField("dataBitsBox", m_pDataBitsBox, "m_currentItemData", "currentItemDataChanged");
+    this->registerField("flowControlBox", m_pFlowControlBox, "m_currentItemData", "currentItemDataChanged");
+    this->registerField("parityBox", m_pParityBox, "m_currentItemData", "currentItemDataChanged");
+    this->registerField("stopBitsBox", m_pStopBitsBox, "m_currentItemData", "currentItemDataChanged");
     this->registerField("allButton", pAllButton);
     this->registerField("inputButton", pInputButton);
     this->registerField("outputButton", pOutputButton);

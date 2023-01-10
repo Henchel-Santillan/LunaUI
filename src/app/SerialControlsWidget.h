@@ -6,6 +6,7 @@
 
 class QAbstractButton;
 class QButtonGroup;
+class QGroupBox;
 class QHBoxLayout;
 class QPushButton;
 class QSpinBox;
@@ -20,6 +21,7 @@ public:
     void setStartButtonEnabled(bool enabled);
     void setEndButtonEnabled(bool enabled);
     void setSendButtonEnabled(bool enabled);
+    void setRwButtonGroupEnabled(bool enabled);
 
 signals:
     void configureRequested();
@@ -39,6 +41,7 @@ private:
 
     QSpinBox *m_pSendBox;
     QButtonGroup *m_pRwGroup;
+    QGroupBox *m_pButtonGroupBox;
 
     // Currently only support for read-only, write-only, and read-write
     QIODeviceBase::OpenMode m_openMode;

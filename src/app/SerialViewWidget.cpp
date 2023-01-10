@@ -1,8 +1,10 @@
 #include "SerialViewWidget.h"
 
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QListWidget>
 #include <QSizePolicy>
+#include <QVBoxLayout>
 
 
 // ========== CONSTRUCTOR DEFINITION
@@ -12,12 +14,19 @@ SerialViewWidget::SerialViewWidget(QWidget *pParent)
     , m_pMessageList(new QListWidget)
     , m_pDataList(new QListWidget)
 {
-    m_pMessageList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-    m_pDataList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    QHBoxLayout *pLabelLayout = new QHBoxLayout;
+    pLabelLayout->addWidget(new QLabel("Messages"));
+    pLabelLayout->addWidget(new QLabel("Data"));
 
-    QHBoxLayout *pMainLayout = new QHBoxLayout;
-    pMainLayout->addWidget(m_pMessageList, 5, Qt::AlignCenter);
-    pMainLayout->addWidget(m_pDataList, 5, Qt::AlignCenter);
+    QHBoxLayout *pListLayout = new QHBoxLayout;
+    pListLayout->addWidget(m_pMessageList);
+    pListLayout->addWidget(m_pDataList);
+
+    QVBoxLayout *pMainLayout = new QVBoxLayout;
+    pMainLayout->addLayout(pLabelLayout);
+    pMainLayout->addLayout(pListLayout);
+
+    this->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
     this->setLayout(pMainLayout);
 }
@@ -42,29 +51,23 @@ void SerialViewWidget::onEventMessageReady(const QString &message) {
     this->enqueue(false, message);
 }
 
-void SerialViewWidget::onEventDataReadReady(const QByteArray &data) {
+void SerialViewWidget::onEventPayloadReadReady(const QByteArray &data) {
     QString dataString("%1 %2");
     dataString = dataString
-        .arg(QString::fromStdString("[DATA-READ]"))
+        .arg(QString::fromStdString("[READ]"))
         .arg(QString(data));
     this->enqueue(true, dataString);
 }
 
-void SerialViewWidget::onEventDataWriteReady(qint64 bytes, bool complete) {
-    QString completeString("%1 : %2");
-    completeString = completeString
-        .arg(QString::fromStdString("Completed"))
-        .arg(QString::number(complete));
-
+void SerialViewWidget::onEventPayloadWriteReady(qint64 bytes) {
     QString writeString("%1 : %2");
     writeString = writeString
         .arg(QString::fromStdString("Bytes written"))
         .arg(QString::number(bytes));
 
-    QString dataString("%1 \n %2 \n %3");
+    QString dataString("%1 \n %2");
     dataString = dataString
-        .arg(QString::fromStdString("DATA-WRITE]"))
-        .arg(completeString)
+        .arg(QString::fromStdString("WRITE]"))
         .arg(writeString);
 
     this->enqueue(true, dataString);

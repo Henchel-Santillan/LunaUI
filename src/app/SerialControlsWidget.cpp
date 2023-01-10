@@ -22,6 +22,7 @@ SerialControlsWidget::SerialControlsWidget(QWidget *pParent)
     , m_pSendButton(new QPushButton("Send"))
     , m_pSendBox(new QSpinBox)
     , m_pRwGroup(new QButtonGroup)
+    , m_pButtonGroupBox(new QGroupBox("Open Mode"))
     , m_openMode(QIODeviceBase::ReadOnly)
 {
     // Connect signals to propagate up to SerialViewDialog or to private slots
@@ -89,8 +90,7 @@ SerialControlsWidget::SerialControlsWidget(QWidget *pParent)
     pRadioButtonLayout->addWidget(pWriteButton);
     pRadioButtonLayout->addWidget(pReadWriteButton);
 
-    QGroupBox *pGroupBox = new QGroupBox("Open Mode");
-    pGroupBox->setLayout(pRadioButtonLayout);
+    m_pButtonGroupBox->setLayout(pRadioButtonLayout);
 
     // Set up the widget layout
     QVBoxLayout *pButtonLayout = new QVBoxLayout;
@@ -100,7 +100,7 @@ SerialControlsWidget::SerialControlsWidget(QWidget *pParent)
 
     QHBoxLayout *pTopControls = new QHBoxLayout;
     pTopControls->addLayout(pButtonLayout);
-    pTopControls->addWidget(pGroupBox, 0, Qt::AlignVCenter);
+    pTopControls->addWidget(m_pButtonGroupBox, 0, Qt::AlignVCenter);
 
     QHBoxLayout *pBottomControls = new QHBoxLayout;
     pBottomControls->addWidget(pSendLabel);   // Hexadecimal inputs expected
@@ -134,11 +134,15 @@ void SerialControlsWidget::setSendButtonEnabled(bool enabled) {
     m_pSendButton->setEnabled(enabled);
 }
 
+void SerialControlsWidget::setRwButtonGroupEnabled(bool enabled) {
+    m_pButtonGroupBox->setEnabled(enabled);
+}
+
 
 // ========== PRIVATE SLOTS
 
 void SerialControlsWidget::onStartButtonClicked() {
-    emit (m_openMode);
+    emit(m_openMode);
 }
 
 void SerialControlsWidget::onSendButtonClicked() {

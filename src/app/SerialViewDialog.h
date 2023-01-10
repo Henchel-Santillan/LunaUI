@@ -9,8 +9,7 @@ class QVBoxLayout;
 
 class SerialControlsWidget;
 class SerialPortWizard;
-class SerialPortReader;
-class SerialPortWriter;
+class SerialPortManager;
 class SerialViewWidget;
 
 class QSerialPort;
@@ -32,8 +31,7 @@ private:
     SerialPortWizard *m_pWizard;
     SerialViewWidget *m_pViewWidget;
 
-    SerialPortReader *m_pReader;
-    SerialPortWriter *m_pWriter;
+    SerialPortManager *m_pPortManager;
 
     QSerialPort *m_pSerialPort;
     QIODeviceBase::OpenMode m_openMode;

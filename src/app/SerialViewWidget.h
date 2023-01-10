@@ -17,8 +17,8 @@ public:
 
 public slots:
     void onEventMessageReady(const QString &message);
-    void onEventDataReadReady(const QByteArray &data);
-    void onEventDataWriteReady(qint64 bytes, bool complete);
+    void onEventPayloadReadReady(const QByteArray &data);
+    void onEventPayloadWriteReady(qint64 bytes);
 
 private:
     // Functions

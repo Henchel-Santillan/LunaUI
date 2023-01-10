@@ -87,7 +87,7 @@ SerialPortSelectWizardPage::SerialPortSelectWizardPage(QWidget *pParent)
 // ========== PUBLIC FUNCTIONS
 
 bool SerialPortSelectWizardPage::isComplete() const {
-    return m_pPortBox->count() == 0;
+    return m_pPortBox->count() != 0;
 }
 
 

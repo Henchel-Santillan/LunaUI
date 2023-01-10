@@ -2,8 +2,7 @@
 
 #include "SerialControlsWidget.h"
 #include "SerialPortWizard.h"
-#include "SerialPortReader.h"
-#include "SerialPortWriter.h"
+#include "SerialPortManager.h"
 #include "SerialViewWidget.h"
 
 #include <QByteArray>
@@ -22,9 +21,8 @@ SerialViewDialog::SerialViewDialog(QWidget *pParent)
     , m_pControlsWidget(new SerialControlsWidget(this))
     , m_pWizard(new SerialPortWizard(this))
     , m_pViewWidget(new SerialViewWidget(this))
-    , m_pReader(new SerialPortReader(this))
-    , m_pWriter(new SerialPortWriter(this))
-    , m_pSerialPort(nullptr)
+    , m_pSerialPort(new QSerialPort(this))
+    , m_pPortManager(new SerialPortManager(m_pSerialPort, this))
     , m_openMode()
 {
     // Connect signals to appropriate handlers
@@ -33,11 +31,9 @@ SerialViewDialog::SerialViewDialog(QWidget *pParent)
     QObject::connect(m_pControlsWidget, &SerialControlsWidget::endRequested, this, &SerialViewDialog::onEndRequested);
     QObject::connect(m_pControlsWidget, &SerialControlsWidget::sendRequested, this, &SerialViewDialog::onSendRequested);
 
-    QObject::connect(m_pReader, &SerialPortReader::eventMessageReady, m_pViewWidget, &SerialViewWidget::onEventMessageReady);
-    QObject::connect(m_pWriter, &SerialPortWriter::eventMessageReady, m_pViewWidget, &SerialViewWidget::onEventMessageReady);
-
-    QObject::connect(m_pReader, &SerialPortReader::eventDataReadReady, m_pViewWidget, &SerialViewWidget::onEventDataReadReady);
-    QObject::connect(m_pWriter, &SerialPortWriter::eventDataWriteReady, m_pViewWidget, &SerialViewWidget::onEventDataWriteReady);
+    QObject::connect(m_pPortManager, &SerialPortManager::eventMessageReady, m_pViewWidget, &SerialViewWidget::onEventMessageReady);
+    QObject::connect(m_pPortManager, &SerialPortManager::eventPayloadReadReady, m_pViewWidget, &SerialViewWidget::onEventPayloadReadReady);
+    QObject::connect(m_pPortManager, &SerialPortManager::eventPayloadWriteReady, m_pViewWidget, &SerialViewWidget::onEventPayloadWriteReady);
 
     // Prepare the dialog layout
     QVBoxLayout *pDialogLayout = new QVBoxLayout;
@@ -60,7 +56,10 @@ void SerialViewDialog::onConfigureRequested() {
         QSerialPortInfo portInfo = m_pWizard->field("portBox").value<QSerialPortInfo>();
 
         // Construct a QSerialPort object using the QSerialPortInfo
-        m_pSerialPort = new QSerialPort(portInfo, this);
+        m_pSerialPort->setPort(portInfo);
+
+        // TODO FIXME: Check if default configuration is requested in the wizard (via a QCheckBox field). If it is, do not apply any of the settings below
+        // before calling open().
 
         // Obtain the configuration values
         QSerialPort::BaudRate baudRate = m_pWizard->field("baudRateBox").value<QSerialPort::BaudRate>();
@@ -108,6 +107,7 @@ void SerialViewDialog::onConfigureRequested() {
 void SerialViewDialog::onStartRequested(QIODeviceBase::OpenMode openMode) {
     m_openMode = openMode;
     m_pControlsWidget->setStartButtonEnabled(false);
+    m_pControlsWidget->setRwButtonGroupEnabled(false);
 
     // Attempt to open the SerialPort with the given open mode
     bool opened = m_pSerialPort->open(openMode);
@@ -132,11 +132,11 @@ void SerialViewDialog::onStartRequested(QIODeviceBase::OpenMode openMode) {
     } else {
         m_pControlsWidget->setEndButtonEnabled(true);
 
+        m_pControlsWidget->setSendButtonEnabled(m_openMode == QIODeviceBase::WriteOnly || m_openMode == QIODeviceBase::ReadWrite);
+
         // The port was opened successfully. This means that whenever the readyRead() signal is emitted, 
-        // the SerialPortReader will readAll() available data.
-        // The above applies once the serial port has been set. Do this for both the reader and writer. 
-        m_pReader->setSerialPort(m_pSerialPort);
-        m_pWriter->setSerialPort(m_pSerialPort);
+        // the SerialPortReader will readAll() available data given the correct open mode (ReadOnly or ReadWrite).
+        // The above applies once the serial port has been set.
     }
 }
 
@@ -145,6 +145,7 @@ void SerialViewDialog::onEndRequested() {
     m_pSerialPort->close();
 
     m_pControlsWidget->setStartButtonEnabled(true);
+    m_pControlsWidget->setRwButtonGroupEnabled(true);
     m_pControlsWidget->setEndButtonEnabled(false);
 }
 
@@ -155,6 +156,6 @@ void SerialViewDialog::onSendRequested(int data) {
     stream.setByteOrder(QDataStream::LittleEndian);
     stream << data;
 
-    m_pSerialPort->write(payload);
+    m_pPortManager->write(payload);
     m_pControlsWidget->setSendButtonEnabled(true);
 }

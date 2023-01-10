@@ -5,5 +5,6 @@
         "xutility": "cpp",
         "iosfwd": "cpp",
         "initializer_list": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }
