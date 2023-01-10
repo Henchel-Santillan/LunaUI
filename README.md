@@ -1,6 +1,6 @@
 # LunaUI
 
-LunaUI is a Qt6 Widgets-based desktop application that accompanies LunaSys, both of which are part of the Luna project. As a desktop user interface, the purpose of LunaUI is to provide live feed from a CMOS camera, basic video playback and image viewing features, and device diagnostics, while functioning as the application-level component connected to an embedded system. There are plans to support features related to computer vision and image processing in the future.
+LunaUI is a Qt6 Widgets-based desktop application that accompanies [LunaSys](https://github.com/Henchel-Santillan/LunaSys). As a desktop user interface, the purpose of LunaUI is to provide image viewing and video playback functionality for frames captured by the camera module used in LunaSys, ultimately acting as the application-level component connected to an embedded system. The UI also affords basic serial logging functionality.
 
 ## Build Instructions
 
@@ -36,7 +36,7 @@ cmake -DCMAKE_PREFIX_PATH=<QT_INSTALL_DIR>\<QT_VERSION>\<MINGW_ARCH>\lib\cmake -
 4. Run the `ninja` command.
 5. Run `start LunaUI.exe`.
 
-An alternative to doing steps 3 to 5 is to use the build-lunaui.bat script in the `scripts` directory. Ensure that the cmake option variables are configured for your setup.
+An alternative to doing steps 3 to 5 is to use the `build-lunaui.bat` script in the `scripts` directory. Ensure that the CMake option variables are configured for your setup.
 
 ## Pre-Release Omissions
 * Configuring blocking (polling) method to work with UART and STM32 Virtual COM Port Driver via Micro USB Type-B connection
